@@ -1,0 +1,72 @@
+[
+    {
+        "available": true,
+        "currentPatients": 2,
+        "id": 1,
+        "name": "Dr. A Sharma",
+        "specialization": "Cardiology"
+    },
+    {
+        "available": true,
+        "currentPatients": 2,
+        "id": 2,
+        "name": "Dr. B Verma",
+        "specialization": "Neurology"
+    },
+    {
+        "available": true,
+        "currentPatients": 0,
+        "id": 3,
+        "name": "Dr. C Mehta",
+        "specialization": "Orthopedics"
+    },
+    {
+        "available": true,
+        "currentPatients": 5,
+        "id": 4,
+        "name": "Dr. D Kapoor",
+        "specialization": "General"
+    },
+    {
+        "available": true,
+        "currentPatients": 0,
+        "id": 5,
+        "name": "Dr. E Sen",
+        "specialization": "Dermatology"
+    },
+    {
+        "available": true,
+        "currentPatients": 3,
+        "id": 6,
+        "name": "Dr. F Rathi",
+        "specialization": "Pulmonology"
+    },
+    {
+        "available": true,
+        "currentPatients": 4,
+        "id": 7,
+        "name": "Dr. G Mishra",
+        "specialization": "Neurology"
+    },
+    {
+        "available": true,
+        "currentPatients": 1,
+        "id": 8,
+        "name": "Dr. H Gupta",
+        "specialization": "Cardiology"
+    },
+    {
+        "available": true,
+        "currentPatients": 2,
+        "id": 9,
+        "name": "Dr. I Thakur",
+        "specialization": "Orthopedics"
+    },
+    {
+        "available": true,
+        "currentPatients": 0,
+        "id": 10,
+        "name": "Dr. J Yadav",
+        "specialization": "General"
+    }
+]

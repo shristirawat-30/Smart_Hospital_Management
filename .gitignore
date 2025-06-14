@@ -1,0 +1,23 @@
+# Ignore system files
+.DS_Store
+Thumbs.db
+
+# Ignore logs
+*.log
+
+# Ignore build output
+build/
+dist/
+
+# Node modules
+node_modules/
+
+# IDE/editor settings
+.vscode/
+*.code-workspace
+*.sublime*
+
+# OS-generated files
+ehthumbs.db
+Icon?
+Desktop.ini
