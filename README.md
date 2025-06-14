@@ -1,8 +1,8 @@
 # Smart Hospital Management System
 
-🩺 A modern web-based system for managing hospital operations like patient registration, doctor assignment, appointment scheduling, and analytics.
+ A modern web-based system for managing hospital operations like patient registration, doctor assignment, appointment scheduling, and analytics.
 
-## 💻 Tech Stack
+##  Tech Stack
 
 - C++ (backend logic & algorithms)
 - Node.js (server)
@@ -10,7 +10,7 @@
 - HTML, CSS (frontend)
 - JSON (data storage)
 
-## 🚀 Features
+##  Features
 
 - Patient registration with binary search
 - Appointment system using priority queue
@@ -18,10 +18,10 @@
 - Analytics dashboard
 - JSON-based export & data management
 
-## 🛠️ Run Locally
+##  Run Locally
 
 ```bash
 git clone https://github.com/shristirawat-30/Smart_Hospital_Management.git
-cd smart-hospital
+cd Smart_Hospital_Management
 npm install
 node server.js
