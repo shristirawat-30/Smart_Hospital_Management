@@ -40,6 +40,14 @@ body {
   color: #f0f0f0;
 }
 
+/* 🕒 DateTime Styling */
+.datetime {
+  font-size: 15px;
+  font-weight: 500;
+  color: #f0f0f0;
+  margin-top: 6px;
+}
+
 /* Navigation Bar */
 .navbar {
   background-color: #ffffff;
