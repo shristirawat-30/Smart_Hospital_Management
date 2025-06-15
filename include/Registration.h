@@ -12,7 +12,7 @@ using namespace std;
 class Registration {
 private:
     vector<Patient> patientList;
-    string filePath = "data/patients.json";  // ✅ use correct path
+    string filePath = "data/patients.json";  // Adjust as needed
 
     void loadPatients() {
         ifstream inFile(filePath);
@@ -25,9 +25,10 @@ private:
                 p.name = el["name"];
                 p.age = el["age"];
                 p.sex = el["sex"];
-                p.symptoms = el["symptoms"]; // ✅ Make sure symptoms are loaded
+                p.symptoms = el["symptoms"];
                 p.mobile = el["mobile"];
                 p.address = el["address"];
+                p.date = el.value("date", "");  // Optional fallback for older data
                 patientList.push_back(p);
             }
         }
@@ -41,9 +42,10 @@ private:
                 {"name", p.name},
                 {"age", p.age},
                 {"sex", p.sex},
-                {"symptoms", p.symptoms}, // ✅ Save symptoms
+                {"symptoms", p.symptoms},
                 {"mobile", p.mobile},
-                {"address", p.address}
+                {"address", p.address},
+                {"date", p.date}  //  Save the timestamp
             });
         }
         ofstream outFile(filePath);
