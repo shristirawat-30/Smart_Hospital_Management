@@ -1,0 +1,50 @@
+<!-- public/register.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Register Patient | Smart Hospital</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header>
+    <h1>Smart Hospital Management</h1>
+    <p class="tagline">One Step Closer to Care</p>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="register.html">Register</a>
+      <a href="appointment.html">Book Appointment</a>
+      <a href="analytics.html">Analytics</a>
+    </nav>
+  </header>
+
+  <main class="form-section">
+    <h2>Register New Patient</h2>
+    <form id="registerForm">
+      <label>Name: <input type="text" name="name" required></label>
+      <label>Age: <input type="number" name="age" required></label>
+      <label>Sex: 
+        <select name="sex" required>
+          <option value="">--Select--</option>
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+          <option value="Other">Other</option>
+        </select>
+      </label>
+      <label>Symptoms: <input type="text" name="symptoms" required></label>
+      <label>Mobile Number: <input type="tel" name="mobile" required></label>
+      <label>Address: <textarea name="address" rows="3" required></textarea></label>
+      
+      <button type="submit">Register</button>
+    </form>
+  </main>
+
+  <script>
+    // We’ll add form submission logic in the next step
+    document.getElementById('registerForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      alert('Form submitted (functionality coming soon)');
+    });
+  </script>
+</body>
+</html>
