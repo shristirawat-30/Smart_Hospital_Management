@@ -1,10 +1,11 @@
-/* Body & Font Setup */
+/* Global Styles */
 body {
   margin: 0;
   padding: 0;
   font-family: 'Segoe UI', sans-serif;
   background-color: #f4f7fc;
   color: #222;
+  line-height: 1.6;
 }
 
 /* Header Section */
@@ -18,20 +19,22 @@ body {
 .header-content {
   display: flex;
   align-items: center;
-  gap: 15px;
+  justify-content: space-between;
+  flex-wrap: wrap;
 }
 
 .logo-icon {
-  font-size: 40px;
+  font-size: 36px;
+  margin-right: 10px;
 }
 
-.main-header h1 {
+.header-text h1 {
   margin: 0;
   font-size: 26px;
 }
 
 .slogan {
-  margin: 0;
+  margin: 5px 0 0;
   font-size: 14px;
   font-style: italic;
   color: #f0f0f0;
@@ -40,7 +43,7 @@ body {
 /* Navigation Bar */
 .navbar {
   background-color: #ffffff;
-  padding: 15px 30px;
+  padding: 12px 30px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.05);
 }
 
@@ -50,19 +53,25 @@ body {
   gap: 25px;
   margin: 0;
   padding: 0;
+  flex-wrap: wrap;
 }
 
 .nav-links li a {
   color: #007bff;
   text-decoration: none;
   font-weight: 500;
+  padding: 6px 10px;
+  border-radius: 5px;
+  transition: background-color 0.3s;
 }
 
-.nav-links li a:hover {
-  text-decoration: underline;
+.nav-links li a:hover,
+.nav-links li a.active {
+  background-color: #007bff;
+  color: white;
 }
 
-/* Dashboard Grid */
+/* Dashboard Layout */
 .dashboard {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -74,7 +83,7 @@ body {
 
 /* Card Styling */
 .card {
-  background-color: white;
+  background-color: #fff;
   padding: 25px;
   border-radius: 12px;
   border-top: 5px solid #007bff;
@@ -90,11 +99,13 @@ body {
 .icon {
   font-size: 45px;
   margin-bottom: 15px;
+  color: #007bff;
 }
 
 .card h2 {
   font-size: 20px;
   margin-bottom: 10px;
+  color: #333;
 }
 
 .card p {
@@ -111,8 +122,22 @@ body {
   border-radius: 6px;
   text-decoration: none;
   font-weight: bold;
+  transition: background-color 0.3s;
 }
 
 .card a:hover {
   background-color: #0056b3;
+}
+
+/* Responsive Enhancements */
+@media (max-width: 768px) {
+  .header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .dashboard {
+    padding: 20px;
+  }
 }

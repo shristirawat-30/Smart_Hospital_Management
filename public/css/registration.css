@@ -1,0 +1,88 @@
+/* registration.css */
+
+body {
+  background-color: #e9f0f7;
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.form-section {
+  max-width: 600px;
+  background-color: #ffffff;
+  padding: 40px 30px;
+  margin: 60px auto;
+  border-radius: 12px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 0.4s ease-in-out;
+}
+
+.form-section h2 {
+  margin-bottom: 30px;
+  color: #007bff;
+  font-size: 26px;
+  text-align: center;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 10px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+label {
+  font-weight: 600;
+  color: #333;
+  display: flex;
+  flex-direction: column;
+  font-size: 15px;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="tel"],
+select,
+textarea {
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 15px;
+  margin-top: 6px;
+  background-color: #f9f9f9;
+  transition: border-color 0.2s;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: #007bff;
+  background-color: #fff;
+}
+
+textarea {
+  resize: vertical;
+}
+
+button[type="submit"] {
+  padding: 12px;
+  background-color: #007bff;
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+button[type="submit"]:hover {
+  background-color: #0056b3;
+}
+
+/* Smooth appearance animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
