@@ -1,29 +1,45 @@
-<!-- public/register.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Register Patient | Smart Hospital</title>
   <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/registration.css">
 </head>
 <body>
-  <header>
-    <h1>Smart Hospital Management</h1>
-    <p class="tagline">One Step Closer to Care</p>
-    <nav>
-      <a href="index.html">Home</a>
-      <a href="register.html">Register</a>
-      <a href="appointment.html">Book Appointment</a>
-      <a href="analytics.html">Analytics</a>
-    </nav>
+
+  <!-- Header -->
+  <header class="main-header">
+    <div class="header-content">
+      <div class="header-text">
+        <h1>Smart Hospital Management</h1>
+        <p class="slogan">One Step Closer to Care</p>
+      </div>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="registration.html" class="active">Register</a></li>
+          <li><a href="appointment.html">Book Appointment</a></li>
+          <li><a href="analytics.html">Analytics</a></li>
+          <li><a href="help.html">Help Desk</a></li>
+        </ul>
+      </nav>
+    </div>
   </header>
 
+  <!-- Registration Form Section -->
   <main class="form-section">
     <h2>Register New Patient</h2>
     <form id="registerForm">
-      <label>Name: <input type="text" name="name" required></label>
-      <label>Age: <input type="number" name="age" required></label>
-      <label>Sex: 
+      <label>Name:
+        <input type="text" name="name" required>
+      </label>
+
+      <label>Age:
+        <input type="number" name="age" required>
+      </label>
+
+      <label>Sex:
         <select name="sex" required>
           <option value="">--Select--</option>
           <option value="Male">Male</option>
@@ -31,20 +47,24 @@
           <option value="Other">Other</option>
         </select>
       </label>
-      <label>Symptoms: <input type="text" name="symptoms" required></label>
-      <label>Mobile Number: <input type="tel" name="mobile" required></label>
-      <label>Address: <textarea name="address" rows="3" required></textarea></label>
-      
+
+      <label>Symptoms:
+        <input type="text" name="symptoms" required>
+      </label>
+
+      <label>Mobile Number:
+        <input type="tel" name="mobile" required>
+      </label>
+
+      <label>Address:
+        <textarea name="address" rows="3" required></textarea>
+      </label>
+
       <button type="submit">Register</button>
     </form>
   </main>
 
-  <script>
-    // We’ll add form submission logic in the next step
-    document.getElementById('registerForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      alert('Form submitted (functionality coming soon)');
-    });
-  </script>
+  <!--  Linked external JS instead of inline script -->
+  <script src="js/registration.js"></script>
 </body>
 </html>
