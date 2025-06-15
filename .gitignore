@@ -4,10 +4,13 @@ Thumbs.db
 
 # Ignore logs
 *.log
+#ignore the data folder
+data/
 
 # Ignore build output
 build/
 dist/
+
 
 # Node modules
 node_modules/
