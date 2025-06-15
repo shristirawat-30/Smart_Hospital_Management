@@ -13,6 +13,7 @@
 ##  Features
 
 - Patient registration with binary search
+- Doctor Assignment based on their specilaity using Levenshtein string mtching algo
 - Appointment system using priority queue
 - Doctor assignment using min-heap load balancing
 - Analytics dashboard
