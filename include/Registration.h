@@ -12,10 +12,11 @@ using namespace std;
 class Registration {
 private:
     vector<Patient> patientList;
-    string filePath = "data/patients.json";  // Adjust as needed
+    string patientFile = "data/patients.json";
+    string permanentFile = "data/permanent_storage.json";
 
     void loadPatients() {
-        ifstream inFile(filePath);
+        ifstream inFile(patientFile);
         if (inFile) {
             json j;
             inFile >> j;
@@ -28,7 +29,7 @@ private:
                 p.symptoms = el["symptoms"];
                 p.mobile = el["mobile"];
                 p.address = el["address"];
-                p.date = el.value("date", "");  // Optional fallback for older data
+                p.date = el.value("date", "");  // fallback for older data
                 patientList.push_back(p);
             }
         }
@@ -45,11 +46,33 @@ private:
                 {"symptoms", p.symptoms},
                 {"mobile", p.mobile},
                 {"address", p.address},
-                {"date", p.date}  //  Save the timestamp
+                {"date", p.date}
             });
         }
-        ofstream outFile(filePath);
+        ofstream outFile(patientFile);
         outFile << j.dump(4);
+    }
+
+    void appendToPermanentStorage(const Patient& p) {
+        json current = json::array();
+        ifstream inFile(permanentFile);
+        if (inFile) {
+            inFile >> current;
+        }
+
+        current.push_back({
+            {"id", p.id},
+            {"name", p.name},
+            {"age", p.age},
+            {"sex", p.sex},
+            {"symptoms", p.symptoms},
+            {"mobile", p.mobile},
+            {"address", p.address},
+            {"date", p.date}
+        });
+
+        ofstream outFile(permanentFile);
+        outFile << current.dump(4);
     }
 
 public:
@@ -60,7 +83,8 @@ public:
     int registerPatient(Patient p) {
         p.id = patientList.size() + 1;
         patientList.push_back(p);
-        savePatients();
+        savePatients();                  // Save to editable patient record
+        appendToPermanentStorage(p);     // Save to permanent log
         return p.id;
     }
 
