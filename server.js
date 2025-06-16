@@ -26,12 +26,6 @@ function readJSON(fileName) {
     }
 }
 
-// Utility: Get today’s file name
-function getTodayFileName() {
-    const now = new Date();
-    return `patients_${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}.json`;
-}
-
 // Utility: Write to a specific file
 function writeToFile(fileName, entry) {
     const filePath = path.join(dataDir, fileName);
@@ -99,8 +93,6 @@ app.post('/api/register', (req, res) => {
     patients.push(patient);
     fs.writeFileSync(patientFile, JSON.stringify(patients, null, 4));
 
-    // Save to today's log and permanent storage
-    writeToFile(getTodayFileName(), patient);
     appendToPermanentStorage(patient);
 
     res.status(201).json({ message: "Patient registered", id: newId });
@@ -109,7 +101,7 @@ app.post('/api/register', (req, res) => {
 // Lookup patient by ID
 app.get('/api/patient/:id', (req, res) => {
     const id = parseInt(req.params.id);
-    const patients = readJSON('patients.json');
+    const patients = readJSON('permanent_storage.json');
     const patient = patients.find(p => p.id === id);
     res.json(patient ? { found: true, patient } : { found: false });
 });
@@ -117,7 +109,7 @@ app.get('/api/patient/:id', (req, res) => {
 // Lookup by Mobile
 app.get('/api/patient-mobile/:mobile', (req, res) => {
     const mobile = req.params.mobile;
-    const patients = readJSON('patients.json');
+    const patients = readJSON('permanent_storage.json');
     const patient = patients.find(p => p.mobile === mobile);
     res.json(patient ? { found: true, patient } : { found: false });
 });
@@ -177,9 +169,8 @@ app.patch('/api/update-symptoms/:id', (req, res) => {
         date
     };
 
-    writeToFile('patients.json', newEntry);               // Add as new in patients.json
-    appendToPermanentStorage(newEntry);                   // Also in permanent
-    writeToFile(getTodayFileName(), newEntry);            // Daily log
+    writeToFile('patients.json', newEntry);
+    appendToPermanentStorage(newEntry);
 
     res.json({ success: true, message: "Symptoms updated and entry stored." });
 });
