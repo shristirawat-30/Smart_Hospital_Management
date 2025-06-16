@@ -3,20 +3,21 @@
 #include "../lib/json.hpp"
 #include "../include/Registration.h"
 
+using namespace std;
 using json = nlohmann::json;
 
 int main(int argc, char* argv[]) {
     if (argc < 2) {
-        std::cerr << R"({"found": false})";
+        cerr << R"({"found": false})";
         return 1;
     }
 
-    std::string query = argv[1];
+    string query = argv[1];
     Registration reg;
     Patient* p = nullptr;
 
     if (isdigit(query[0])) {
-        int id = std::stoi(query);
+        int id = stoi(query);
         p = reg.findPatientByID(id);
     } else {
         p = reg.findPatientByMobile(query);
@@ -32,12 +33,13 @@ int main(int argc, char* argv[]) {
                 {"sex", p->sex},
                 {"symptoms", p->symptoms},
                 {"mobile", p->mobile},
-                {"address", p->address}
+                {"address", p->address},
+                {"date", p->date}
             }}
         };
-        std::cout << output.dump();
+        cout << output.dump();
     } else {
-        std::cout << R"({"found": false})";
+        cout << R"({"found": false})";
     }
 
     return 0;
