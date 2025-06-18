@@ -1,4 +1,3 @@
-<!-- public/appointment.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,8 +9,10 @@
 <body>
   <header class="main-header">
     <div class="header-content">
-      <h1>Smart Hospital Management</h1>
-      <p class="slogan">One Step Closer to Care</p>
+      <div class="header-text">
+        <h1>Smart Hospital Management</h1>
+        <p class="slogan">One Step Closer to Care</p>
+      </div>
       <nav>
         <ul class="nav-links">
           <li><a href="index.html">Home</a></li>
@@ -23,46 +24,47 @@
   </header>
 
   <main class="form-section">
-    <h2>Book Appointment</h2>
-    <form id="appointmentForm">
-      <label>Patient ID:
-        <input type="number" name="patientID" required />
-      </label>
+    <h2>Book an Appointment</h2>
 
-      <label>Is it an Emergency?
-        <select name="isEmergency" required>
-          <option value="0">No</option>
-          <option value="1">Yes</option>
-        </select>
+    <!-- Step 1: Enter Patient ID -->
+    <form id="fetchForm">
+      <label>Enter Patient ID:
+        <input type="number" name="patientID" id="patientIDInput" placeholder="e.g., 101" required />
       </label>
-
-      <label>Priority (only if emergency):
-        <input type="number" name="priority" placeholder="e.g., 1 (urgent)" />
-      </label>
-
-      <button type="submit">Submit</button>
+      <button type="submit">Fetch Details</button>
     </form>
 
-    <div id="responseBox"></div>
+    <!-- Step 2: Display Patient Details -->
+    <div id="patientDetails" style="display: none;">
+      <h3>Patient Details</h3>
+      <p><strong>Name:</strong> <span id="pname"></span></p>
+      <p><strong>Age:</strong> <span id="page"></span></p>
+      <p><strong>Sex:</strong> <span id="psex"></span></p>
+      <p><strong>Symptoms:</strong> <span id="psymptoms"></span></p>
+      <p><strong>Specialization:</strong> <span id="pspecialization"></span></p>
+
+      <!-- Step 3: Select Emergency Status -->
+      <form id="appointmentForm">
+        <label>Is it an Emergency?
+          <select name="isEmergency" id="isEmergency" required>
+            <option value="0">No</option>
+            <option value="1">Yes</option>
+          </select>
+        </label>
+        <div id="priorityField" style="display: none;">
+          <label>Priority (only for emergency):
+            <input type="number" name="priority" id="priorityInput" placeholder="e.g., 1 (urgent)" />
+          </label>
+        </div>
+        <input type="hidden" name="id" id="confirmedID" />
+        <button type="submit">Book Appointment</button>
+      </form>
+    </div>
+
+    <!-- Response Area -->
+    <div id="responseBox" class="info-box"></div>
   </main>
 
-  <script>
-    document.getElementById("appointmentForm").addEventListener("submit", async function (e) {
-      e.preventDefault();
-
-      const patientID = this.patientID.value;
-      const isEmergency = this.isEmergency.value;
-      const priority = this.priority.value || -1;
-
-      const response = await fetch('/run-cpp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: "appointment", patientID, isEmergency, priority })
-      });
-
-      const data = await response.json();
-      document.getElementById("responseBox").innerText = data.output || "Done.";
-    });
-  </script>
+  <script src="js/appointment.js"></script>
 </body>
 </html>
