@@ -1,47 +1,67 @@
 #  Smart Hospital Management System
 
-A modern, AI-integrated hospital platform built with C++ and Node.js for efficient patient registration, doctor assignment, appointment scheduling, and analytics.
+A modern, AI-integrated hospital platform built with **C++** and **Node.js** for efficient patient registration, symptom analysis, doctor assignment, appointment scheduling, and future-ready analytics.
 
 ---
 
 ##  Tech Stack
 
-- **C++** – DAA-based core logic (Binary Search, Min-Heap, String Matching)
-- **Node.js + Express.js** – Backend server & API handling
-- **HTML, CSS, JavaScript** – Responsive and dynamic frontend
-- **JSON** – Lightweight storage for patients, doctors, and appointments
+- **C++**
+  - Binary Search for fast patient lookup
+  - Levenshtein-based String Matching (Symptom Matcher)
+  - Min-Heap Load Balancing (Doctor workload)
+- **Node.js + Express.js**
+  - REST API handling
+  - C++ integration using `child_process`
+- **HTML, CSS, JavaScript**
+  - Responsive and dynamic frontend
+- **JSON**
+  - Lightweight data storage (doctors, patients, appointments)
 
 ---
 
-##  Features (As of Now)
+##  Features Implemented
 
 ###  Patient Registration
-- New patients provide full details with current symptoms.
-- Returning patients are searched via **C++-based binary search** (ID or mobile).
-- **Live Date-Time** is recorded automatically for every entry or symptom update.
-- Symptoms are editable only for today — historical data remains unchanged.
 
-###  Dual JSON Storage System
-- `patients.json`: For **today’s records** (editable).
-- `permanent_storage.json`: **Non-editable**, full patient logs with time-stamped records of every visit or update.
+- New patients fill in details (name, age, sex, symptoms, etc.).
+- Returning patients are looked up via:
+  - **ID-based Binary Search** or
+  - **Mobile Number-based fallback**
+- Data is stored in two ways:
+  - `patients.json` → **Today's working file**
+  - `permanent_storage.json` → **History log** (immutable)
+- **Live timestamping** for every update.
+
+###  Symptom Matcher
+
+- Implements **Levenshtein Distance** algorithm.
+- Matches patient symptoms with doctor specialization dynamically.
+- Supports typos and partial keyword matching.
 
 ###  Doctor Assignment
-- Auto-matching based on **Levenshtein similarity** between symptoms and specializations.
-- Uses **Greedy + Min-Heap Load Balancing** for doctor workload distribution.
 
-###  Appointments
-- Scheduled via **priority queues** for emergencies and regular cases.
-- Emergency cases skip the line for immediate doctor assignment.
+- Matches based on specialization.
+- Chooses doctor with **lowest workload** (Greedy using Min-Heap).
+- Uses `doctors_daily.json` to update and reflect real-time workload changes.
 
-###  Analytics (coming next)
-- Interactive charts for patients per department, doctor workloads, and trends.
+###  Appointment Booking
+
+- Emergency patients:
+  - Go directly to doctors with **highest priority**.
+  - Scheduled using **priority queue**.
+- Normal patients:
+  - Handled on **FCFS (First-Come-First-Serve)** with load balancing.
+- Stored in `appointments.json` with **readable timestamps**.
+
+###  Analytics (Coming Next)
+
+- Planned features:
+  - Patients per specialization chart
+  - Doctor-wise load trends
+  - Daily visit trends
 
 ---
 
-##  Run Locally
+##  File Structure
 
-```bash
-git clone https://github.com/shristirawat-30/Smart_Hospital_Management.git
-cd Smart_Hospital_Management
-npm install
-node server.js
