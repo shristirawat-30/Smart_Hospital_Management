@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Patient Analytics - Healthcare Dashboard</title>
+  <link rel="stylesheet" href="css/patient-analytics.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="dashboard">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-content">
+        <div class="header-left">
+          <a href="analytics.html" class="back-btn">← Back</a>
+          <div class="header-title">
+            <h1>Patient Analytics</h1>
+            <p>Comprehensive patient insights and statistics</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Controls -->
+      <div class="controls-card">
+        <div class="controls-content">
+          <div class="controls-left">
+            <label for="view-select">Select View:</label>
+            <select id="view-select">
+              <option value="patient-analytics.html" selected>Patient Analytics</option>
+              <option value="doctor-analytics.html">Doctor Analytics</option>
+              <option value="appointment-analytics.html">Appointment Analytics</option>
+            </select>
+          </div>
+          <button class="export-btn">📥 Export Analytics Data (JSON)</button>
+        </div>
+      </div>
+
+      <!-- Patient Statistics -->
+      <div class="stats-card">
+        <div class="card-header">
+          <h2>👥 Patient Statistics</h2>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-item blue">
+            <p class="stat-label">Total Patients</p>
+            <p class="stat-value" id="totalPatients">0</p>
+          </div>
+          <div class="stat-item red">
+            <p class="stat-label">Emergency Cases</p>
+            <p class="stat-value" id="emergencyCases">0</p>
+          </div>
+          <div class="stat-item green">
+            <p class="stat-label">Average Age</p>
+            <p class="stat-value" id="averageAge">0</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gender Distribution -->
+      <div class="chart-card">
+        <div class="card-header">
+          <h3>Gender Distribution</h3>
+        </div>
+        <div class="chart-content">
+          <div class="chart-container">
+            <canvas id="genderChart" width="300" height="300"></canvas>
+          </div>
+          <div class="legend">
+            <div class="legend-item">
+              <div class="legend-color male"></div>
+              <span>Male</span>
+              <span class="legend-value" id="malePercentage">0%</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color female"></div>
+              <span>Female</span>
+              <span class="legend-value" id="femalePercentage">0%</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color other"></div>
+              <span>Other</span>
+              <span class="legend-value" id="otherPercentage">0%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Additional Insights -->
+      <div class="insights-grid">
+        <div class="insight-card">
+          <div class="card-header">
+            <h3>⚠️ Health Alerts</h3>
+          </div>
+          <div class="alert-list">
+            <div class="alert-item yellow">
+              <p>No critical health alerts at this time</p>
+            </div>
+            <div class="alert-item blue">
+              <p>All patients have completed their recent check-ups</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="insight-card">
+          <div class="card-header">
+            <h3>📅 Health Analytics</h3>
+          </div>
+          <div class="activity-list">
+            <div class="activity-item">
+              <div class="activity-dot green"></div>
+              <p>Dynamic patient analytics powered by real data</p>
+            </div>
+            <div class="activity-item">
+              <div class="activity-dot blue"></div>
+              <p>Real-time updates on age & gender distribution</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JS: Fetch data and handle dropdown redirect -->
+  <script>
+    // Dropdown redirect
+    document.getElementById("view-select").addEventListener("change", function () {
+      const selectedPage = this.value;
+      if (selectedPage) window.location.href = selectedPage;
+    });
+
+    // Fetch & display analytics
+    async function fetchPatientAnalytics() {
+      try {
+        const res = await fetch("http://localhost:3000/api/patient-analytics-today");
+        const data = await res.json();
+
+        document.getElementById("totalPatients").textContent = data.totalPatients || 0;
+        document.getElementById("emergencyCases").textContent = data.emergencyCases || 0;
+        document.getElementById("averageAge").textContent = data.averageAge || 0;
+
+        const male = data.genderDistribution?.Male || 0;
+        const female = data.genderDistribution?.Female || 0;
+        const other = data.genderDistribution?.Other || 0;
+        const total = male + female + other;
+
+        const percent = (val) => total ? Math.round((val / total) * 100) : 0;
+        document.getElementById("malePercentage").textContent = `${percent(male)}%`;
+        document.getElementById("femalePercentage").textContent = `${percent(female)}%`;
+        document.getElementById("otherPercentage").textContent = `${percent(other)}%`;
+
+        const ctx = document.getElementById("genderChart").getContext("2d");
+        new Chart(ctx, {
+          type: "doughnut",
+          data: {
+            labels: ["Male", "Female", "Other"],
+            datasets: [{
+              data: [male, female, other],
+              backgroundColor: ["#3B82F6", "#EF4444", "#10B981"],
+              borderWidth: 0
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false }
+            }
+          }
+        });
+
+      } catch (error) {
+        console.error("Error fetching analytics:", error);
+      }
+    }
+
+    fetchPatientAnalytics();
+  </script>
+</body>
+</html>
