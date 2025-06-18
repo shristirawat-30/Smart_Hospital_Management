@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Doctor Analytics</title>
+  <link rel="stylesheet" href="css/doctor-analytics.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="dashboard">
+    <div class="header">
+      <div class="header-content">
+        <div class="header-left">
+          <a href="analytics.html" class="back-btn">← Back</a>
+          <div class="header-title">
+            <h1>Doctor Analytics</h1>
+            <p>Doctor workload and specialization insights</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="main-content">
+      <div class="controls-card">
+        <div class="controls-content">
+          <div class="controls-left">
+            <label for="view-select">Select View:</label>
+            <select id="view-select" onchange="window.location.href = this.value">
+              <option value="patient-analytics.html">Patient Analytics</option>
+              <option value="doctor-analytics.html" selected>Doctor Analytics</option>
+              <option value="appointment-analytics.html">Appointment Analytics</option>
+            </select>
+          </div>
+          <button class="export-btn" onclick="exportData()">📥 Export Analytics Data</button>
+        </div>
+      </div>
+
+      <div class="stats-card">
+        <div class="card-header"><h2>👨‍⚕️ Doctor Workload Analysis</h2></div>
+        <div class="stats-grid">
+          <div class="stat-item blue">
+            <p class="stat-label">Total Doctors</p>
+            <p class="stat-value" id="totalDoctors">0</p>
+          </div>
+          <div class="stat-item green">
+            <p class="stat-label">Available Doctors</p>
+            <p class="stat-value" id="availableDoctors">0</p>
+          </div>
+          <div class="stat-item orange">
+            <p class="stat-label">Average Workload</p>
+            <p class="stat-value" id="averageWorkload">0%</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="charts-grid">
+        <div class="chart-card">
+          <div class="card-header"><h3>🏥 Specialization Distribution</h3></div>
+          <div class="chart-container"><canvas id="specializationChart"></canvas></div>
+        </div>
+
+        <div class="chart-card">
+          <div class="card-header"><h3>⏰ Doctor Workload Comparison</h3></div>
+          <div class="chart-container"><canvas id="workloadChart"></canvas></div>
+        </div>
+      </div>
+
+      <div class="insights-grid">
+        <div class="insight-card">
+          <div class="card-header"><h3>Top Performing Doctors</h3></div>
+          <div class="performance-list" id="topDoctors"></div>
+        </div>
+
+        <div class="insight-card">
+          <div class="card-header"><h3>Department Summary</h3></div>
+          <div class="summary-list">
+            <div class="summary-item blue">
+              <p class="summary-title" id="mostPopularDept">Most Popular Department</p>
+              <p class="summary-subtitle" id="mostPopularCount"></p>
+            </div>
+            <div class="summary-item green">
+              <p class="summary-title" id="staffStatus"></p>
+              <p class="summary-subtitle" id="deptSummary"></p>
+            </div>
+            <div class="summary-item orange">
+              <p class="summary-title" id="avgCapacity"></p>
+              <p class="summary-subtitle" id="moreAssignments"></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    async function fetchDoctorData() {
+      try {
+        const res = await fetch("/data/doctors_daily.json"); // Adjust path if needed
+        const doctors = await res.json();
+
+        const totalDoctors = doctors.length;
+        const availableDoctors = doctors.filter(d => d.available).length;
+        const avgWorkload = (doctors.reduce((sum, d) => sum + d.currentPatients, 0) / (totalDoctors * 10) * 100).toFixed(1);
+
+        const specializationCount = {};
+        doctors.forEach(d => {
+          specializationCount[d.specialization] = (specializationCount[d.specialization] || 0) + 1;
+        });
+
+        const workloadComparison = doctors.map(d => ({
+          name: d.name,
+          workload: (d.currentPatients * 10).toFixed(0)  // Assuming 10 is 100%
+        })).sort((a, b) => b.workload - a.workload);
+
+        // Update Stats
+        document.getElementById("totalDoctors").textContent = totalDoctors;
+        document.getElementById("availableDoctors").textContent = availableDoctors;
+        document.getElementById("averageWorkload").textContent = `${avgWorkload}%`;
+
+        // Specialization Chart
+        new Chart(document.getElementById("specializationChart"), {
+          type: "bar",
+          data: {
+            labels: Object.keys(specializationCount),
+            datasets: [{
+              label: "Doctors",
+              data: Object.values(specializationCount),
+              backgroundColor: "#3B82F6"
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true } }
+          }
+        });
+
+        // Workload Chart
+        new Chart(document.getElementById("workloadChart"), {
+          type: "bar",
+          data: {
+            labels: workloadComparison.map(d => d.name),
+            datasets: [{
+              label: "Workload (%)",
+              data: workloadComparison.map(d => d.workload),
+              backgroundColor: "#10B981"
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true } }
+          }
+        });
+
+        // Top 5 Doctors
+        document.getElementById("topDoctors").innerHTML = workloadComparison.slice(0, 5).map((d, i) => `
+          <div class="performance-item">
+            <div class="rank">${i + 1}</div>
+            <span class="doctor-name">${d.name}</span>
+            <span class="workload-value">${d.workload}%</span>
+          </div>
+        `).join("");
+
+        // Department Summary
+        const mostPopular = Object.entries(specializationCount).sort((a, b) => b[1] - a[1])[0];
+
+        document.getElementById("mostPopularDept").textContent = `Most Popular: ${mostPopular[0]}`;
+        document.getElementById("mostPopularCount").textContent = `${mostPopular[1]} doctors available`;
+
+        document.getElementById("staffStatus").textContent = "All departments fully staffed";
+        document.getElementById("deptSummary").textContent = `${totalDoctors} total doctors across ${Object.keys(specializationCount).length} specializations`;
+
+        document.getElementById("avgCapacity").textContent = `Average capacity: ${avgWorkload}%`;
+        document.getElementById("moreAssignments").textContent = "Room for more patient assignments";
+
+      } catch (error) {
+        console.error("Error loading data:", error);
+      }
+    }
+
+    function exportData() {
+      fetch("/data/doctors_daily.json")
+        .then(res => res.blob())
+        .then(blob => {
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = "doctors_daily.json";
+          a.click();
+        });
+    }
+
+    window.onload = fetchDoctorData;
+   setInterval(fetchDoctorData, 10000);
+ // Refresh every 10 seconds
+
+  </script>
+</body>
+</html>

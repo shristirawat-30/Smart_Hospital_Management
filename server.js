@@ -11,6 +11,8 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/data', express.static(path.join(__dirname, 'data'))); // ✅ This line makes data visible to browser
+
 
 // Ensure required directories exist
 const dataDir = path.join(__dirname, 'data');
@@ -200,6 +202,93 @@ app.post('/api/appointment-cpp-lookup', (req, res) => {
         } catch {
             res.status(500).json({ error: "Invalid C++ output." });
         }
+    });
+});
+
+//patient-analytics
+
+app.get('/api/patient-analytics-today', (req, res) => {
+    const allPatients = readJSON('patients.json');
+
+    const totalPatients = allPatients.length;
+
+    const emergencyKeywords = ['emergency', 'serious', 'critical'];
+    const emergencyCases = allPatients.filter(p =>
+        emergencyKeywords.some(kw => (p.symptoms || "").toLowerCase().includes(kw))
+    ).length;
+
+    const averageAge = totalPatients
+        ? allPatients.reduce((sum, p) => sum + parseInt(p.age || 0), 0) / totalPatients
+        : 0;
+
+    const genderDistribution = { Male: 0, Female: 0, Other: 0 };
+    allPatients.forEach(p => {
+        const genderRaw = (p.sex || '').trim().toLowerCase();
+        if (genderRaw === 'male') genderDistribution.Male++;
+        else if (genderRaw === 'female') genderDistribution.Female++;
+        else genderDistribution.Other++;
+    });
+
+    res.json({
+        totalPatients,
+        emergencyCases,
+        averageAge: parseFloat(averageAge.toFixed(1)),
+        genderDistribution
+    });
+});
+
+
+
+//doctor-analytics
+
+app.get('/api/doctor-analytics-today', (req, res) => {
+    const doctors = readJSON('daily_doctor.json');  // real-time doctor workload
+
+    const totalDoctors = doctors.length;
+    const availableDoctors = doctors.filter(d => d.available).length;
+
+    // Workload info
+    const doctorWorkloadComparison = doctors.map(d => ({
+        name: d.name,
+        workload: d.currentPatients * 10  // assuming max workload is 10 patients = 100%
+    }));
+
+    // Average workload
+    const averageWorkload = doctorWorkloadComparison.length > 0
+        ? parseFloat((doctorWorkloadComparison.reduce((sum, d) => sum + d.workload, 0) / doctorWorkloadComparison.length).toFixed(1))
+        : 0;
+
+    // Specialization count
+    const specializationDistribution = {};
+    for (const doc of doctors) {
+        if (!specializationDistribution[doc.specialization]) {
+            specializationDistribution[doc.specialization] = 1;
+        } else {
+            specializationDistribution[doc.specialization]++;
+        }
+    }
+
+    // Most Popular Department
+    let mostPopularDepartment = "";
+    let maxCount = 0;
+    for (const [spec, count] of Object.entries(specializationDistribution)) {
+        if (count > maxCount) {
+            maxCount = count;
+            mostPopularDepartment = spec;
+        }
+    }
+
+    // Fully staffed? (Optional logic: e.g. no unavailable doctors)
+    const departmentsFullyStaffed = doctors.every(d => d.available);
+
+    res.json({
+        totalDoctors,
+        availableDoctors,
+        averageWorkload,
+        doctorWorkloadComparison,
+        specializationDistribution,
+        mostPopularDepartment,
+        departmentsFullyStaffed
     });
 });
 

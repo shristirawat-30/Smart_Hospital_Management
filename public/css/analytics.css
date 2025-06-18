@@ -1,0 +1,85 @@
+/* Main container */
+.analytics-main {
+  max-width: 700px;
+  margin: 50px auto;
+  padding: 20px;
+  text-align: center;
+  font-family: 'Segoe UI', sans-serif;
+  color: #222;
+}
+
+/* Heading */
+.analytics-main h2 {
+  font-size: 28px;
+  margin-bottom: 25px;
+  color: #007bff;
+  font-weight: 700;
+}
+
+/* Dropdown section */
+.dropdown-section {
+  background-color: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  padding: 30px 20px;
+  box-shadow: 0 4px 15px rgba(0, 123, 255, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.dropdown-section:hover {
+  transform: translateY(-2px);
+}
+
+.dropdown-section label {
+  display: block;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 12px;
+  font-size: 16px;
+}
+
+/* Dropdown styling */
+#analytics-select {
+  width: 100%;
+  padding: 12px 15px;
+  font-size: 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background-color: #f9fafb;
+  transition: border 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+#analytics-select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.15);
+}
+
+/* Go Button Styling */
+.go-btn {
+  margin-top: 20px;
+  padding: 12px 25px;
+  font-size: 16px;
+  font-weight: 600;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.go-btn:hover {
+  background-color: #0056b3;
+  transform: translateY(-2px);
+}
+
+.go-btn:active {
+  transform: scale(0.97);
+}
+
+/* Hide card layout if included */
+.summary-cards {
+  display: none;
+}

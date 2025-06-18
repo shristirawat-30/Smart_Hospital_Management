@@ -1,0 +1,243 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appointment Analytics - Healthcare Dashboard</title>
+    <link rel="stylesheet" href="css/appointment-analytics.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-content">
+                <div class="header-left">
+                    <a href="analytics.html" class="back-btn">← Back</a>
+                    <div class="header-title">
+                        <h1>Appointment Analytics</h1>
+                        <p>Appointment trends and scheduling insights</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Controls -->
+            <div class="controls-card">
+                <div class="controls-content">
+                    <div class="controls-left">
+                        <label for="view-select">Select View:</label>
+                        <select id="view-select">
+                            <option value="patient-analytics.html">Patient Analytics</option>
+                            <option value="doctor-analytics.html">Doctor Analytics</option>
+                            <option value="appointment-analytics.html" selected>Appointment Analytics</option>
+                        </select>
+                    </div>
+                    <button class="export-btn">📥 Export Analytics Data (JSON)</button>
+                </div>
+            </div>
+
+            <!-- Appointment Trend Analysis -->
+            <div class="stats-card">
+                <div class="card-header">
+                    <h2>📅 Appointment Trend Analysis</h2>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-item blue">
+                        <p class="stat-label">Total Appointments</p>
+                        <p class="stat-value">1</p>
+                    </div>
+                    <div class="stat-item red">
+                        <p class="stat-label">Emergency Appointments</p>
+                        <p class="stat-value">0</p>
+                    </div>
+                    <div class="stat-item green">
+                        <p class="stat-label">Regular Appointments</p>
+                        <p class="stat-value">1</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="charts-grid">
+                <!-- Appointments by Day -->
+                <div class="chart-card">
+                    <div class="card-header">
+                        <h3>📈 Appointments by Day</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="appointmentTrendChart" width="400" height="300"></canvas>
+                    </div>
+                </div>
+
+                <!-- Appointment Types -->
+                <div class="chart-card">
+                    <div class="card-header">
+                        <h3>⏰ Appointment Types</h3>
+                    </div>
+                    <div class="chart-content">
+                        <div class="chart-container-pie">
+                            <canvas id="appointmentTypeChart" width="250" height="250"></canvas>
+                        </div>
+                        <div class="legend">
+                            <div class="legend-item">
+                                <div class="legend-color regular"></div>
+                                <span>Regular</span>
+                                <span class="legend-value">100%</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color emergency"></div>
+                                <span>Emergency</span>
+                                <span class="legend-value">0%</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color followup"></div>
+                                <span>Follow-up</span>
+                                <span class="legend-value">0%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Schedule Insights -->
+            <div class="insights-grid">
+                <div class="insight-card">
+                    <div class="card-header">
+                        <h3>⏰ Peak Hours</h3>
+                    </div>
+                    <div class="peak-hours-list">
+                        <div class="peak-item blue">
+                            <p class="peak-title">Most Busy: Tuesday</p>
+                            <p class="peak-subtitle">1 appointment scheduled</p>
+                        </div>
+                        <div class="peak-item green">
+                            <p class="peak-title">Available slots: 98%</p>
+                            <p class="peak-subtitle">Plenty of capacity for new appointments</p>
+                        </div>
+                        <div class="peak-item orange">
+                            <p class="peak-title">Weekly growth: +100%</p>
+                            <p class="peak-subtitle">From 0 to 1 appointments this week</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="insight-card">
+                    <div class="card-header">
+                        <h3>⚠️ Schedule Alerts</h3>
+                    </div>
+                    <div class="alerts-list">
+                        <div class="alert-item green">
+                            <p>✓ No scheduling conflicts detected</p>
+                        </div>
+                        <div class="alert-item blue">
+                            <p>ⓘ 6 days with no appointments scheduled</p>
+                        </div>
+                        <div class="alert-item yellow">
+                            <p>⚠ Consider promoting available appointment slots</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Appointment History -->
+            <div class="history-card">
+                <div class="card-header">
+                    <h3>Recent Appointment Activity</h3>
+                </div>
+                <div class="history-list">
+                    <div class="history-item active">
+                        <div class="history-dot active"></div>
+                        <div class="history-content">
+                            <p class="history-title">Regular Appointment Scheduled</p>
+                            <p class="history-subtitle">Tuesday - Patient consultation</p>
+                        </div>
+                        <span class="history-status active">Active</span>
+                    </div>
+                    
+                    <div class="history-item">
+                        <div class="history-dot"></div>
+                        <div class="history-content">
+                            <p class="history-title">No other appointments this week</p>
+                            <p class="history-subtitle">Schedule is mostly available</p>
+                        </div>
+                        <span class="history-status">Available</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Appointment Trend Chart
+        const trendCtx = document.getElementById('appointmentTrendChart').getContext('2d');
+        new Chart(trendCtx, {
+            type: 'line',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Number of Appointments',
+                    data: [0, 1, 0, 0, 0, 0, 0],
+                    borderColor: '#10B981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    borderWidth: 3,
+                    pointBackgroundColor: '#10B981',
+                    pointBorderColor: '#10B981',
+                    pointRadius: 6,
+                    pointHoverRadius: 8,
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: '#e5e7eb'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: '#e5e7eb'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Appointment Type Chart
+        const typeCtx = document.getElementById('appointmentTypeChart').getContext('2d');
+        new Chart(typeCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Regular', 'Emergency', 'Follow-up'],
+                datasets: [{
+                    data: [100, 0, 0],
+                    backgroundColor: ['#3B82F6', '#EF4444', '#10B981'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

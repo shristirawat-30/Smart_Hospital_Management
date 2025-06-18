@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Analytics - Smart Hospital Management</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/analytics.css" />
+</head>
+<body>
+  <!-- Header -->
+  <header class="main-header">
+    <div class="header-content">
+      <span class="logo-icon">🏥</span>
+      <div>
+        <h1>Smart Hospital Management</h1>
+        <p class="slogan">Analytics Dashboard</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="analytics.html" class="active">Analytics</a></li>
+      <li><a href="help.html">Help Desk</a></li>
+    </ul>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="analytics-main">
+    <h2>Select Analytics Category</h2>
+
+    <div class="dropdown-section">
+      <label for="analytics-select">Choose a category:</label>
+      <select id="analytics-select">
+        <option value="">-- Select --</option>
+        <option value="patient-analytics.html">👥 Patients Registered Today</option>
+        <option value="appointment-analytics.html">📅 Appointments Booked Today</option>
+        <option value="doctor-analytics.html">🩺 Doctors' Workload</option>
+        <option value="analytics_doctor_categories.html">📊 Doctor Categories Overview</option>
+      </select>
+      <button id="go-button" class="go-btn">Go →</button>
+    </div>
+  </main>
+
+  <!-- JavaScript -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const select = document.getElementById("analytics-select");
+      const goButton = document.getElementById("go-button");
+
+      goButton.addEventListener("click", () => {
+        const value = select.value;
+        if (value) {
+          window.location.href = value;
+        } else {
+          alert("Please select an analytics category.");
+        }
+      });
+
+      // Optional: Reset selection when user returns to this page
+      select.selectedIndex = 0;
+    });
+  </script>
+</body>
+</html>
