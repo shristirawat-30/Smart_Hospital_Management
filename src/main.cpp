@@ -1,140 +1,99 @@
 #include <iostream>
 #include <fstream>
-#include <ctime>
+#include <string>
+#include <vector>
+#include <algorithm>
+#include <ctime>  // ✅ Needed for timestamp conversion
 #include "json.hpp"
 
-
-#include "Patient.h"
-#include "Doctor.h"
-#include "Appointment.h"
-#include "Registration.h"
 #include "AppointmentSystem.h"
-#include "DoctorAssignment.h"
-#include "SymptomMatcher.h"
+#include "Patient.h"  // Contains full Patient struct
 
-using namespace std;
 using json = nlohmann::json;
+using namespace std;
 
-int main() {
-    Registration reg;
-    AppointmentSystem appSys;
-    DoctorAssignment docAssign;
+// ✅ Function to convert UNIX timestamp to readable time
+string getReadableTime(time_t timestamp) {
+    char buffer[100];
+    strftime(buffer, sizeof(buffer), "%A, %B %d, %Y, %I:%M:%S %p", localtime(&timestamp));
+    return string(buffer);
+}
 
-    while (true) {
-        cout << "\n--- Smart Hospital Management System ---\n";
-        cout << "1. Register Patient\n";
-        cout << "2. Book Appointment\n";
-        cout << "3. Get Next Appointment\n";
-        cout << "4. Exit\n";
-        cout << "Enter your choice: ";
-        int choice;
-        cin >> choice;
+// Load patient list from JSON file
+vector<Patient> loadPatients(const string& filePath) {
+    vector<Patient> patients;
+    ifstream file(filePath);
+    if (!file) {
+        cerr << R"({"success": false, "message": "Could not open patients.json"})" << endl;
+        return patients;
+    }
 
-        if (choice == 1) {
-            Patient p;
-            cout << "Enter Name: "; cin >> ws; getline(cin, p.name);
-            cout << "Enter Age: "; cin >> p.age;
-            cout << "Enter Sex: "; cin >> p.sex;
-            cout << "Enter Symptoms: "; cin >> ws; getline(cin, p.symptoms);
-            cout << "Enter Mobile: "; cin >> p.mobile;
-            cout << "Enter Address: "; cin >> ws; getline(cin, p.address);
-            int id = reg.registerPatient(p);
-            cout << "Patient Registered. ID: " << id << endl;
+    json j;
+    file >> j;
 
-        } else if (choice == 2) {
-            int id;
-            cout << "Enter Patient ID: ";
-            cin >> id;
-            Patient* p = reg.findPatientByID(id);
-            if (!p) {
-                string mob;
-                cout << "ID not found. Enter Mobile Number: ";
-                cin >> mob;
-                p = reg.findPatientByMobile(mob);
-            }
-            if (!p) {
-                cout << "Patient not found. Please register first." << endl;
-                continue;
-            }
-
-            Appointment a;
-            a.patientID = p->id;
-            a.patientName = p->name;
-
-            cout << "Is it an emergency case? (1 for Yes / 0 for No): ";
-            cin >> a.isEmergency;
-            if (a.isEmergency) {
-                cout << "Enter Emergency Priority (lower number = more urgent): ";
-                cin >> a.priority;
-            }
-
-            SymptomMatcher matcher;
-            string specialization = matcher.matchSpecialization(p->symptoms);
-            cout << "Detected specialization: " << specialization << endl;
-
-            Doctor* doc = docAssign.assignDoctor(specialization);
-            if (!doc && specialization != "General") {
-                cout << "No doctor available in " << specialization << ". Trying General..." << endl;
-                doc = docAssign.assignDoctor("General");
-                if (!doc) {
-                    cout << "No doctor available in General either." << endl;
-                    continue;
-                }
-            }
-
-            if (doc) {
-                cout << "Assigned Doctor: " << doc->name << " (ID: " << doc->id << ")" << endl;
-            }
-
-            // Save appointment to appointments.json
-            json j;
-            ifstream in("data/appointments.json");
-            if (in) in >> j;
-            in.close();
-
-            json newApp = {
-                {"patient_id", a.patientID},
-                {"patient_name", a.patientName},
-                {"is_emergency", a.isEmergency},
-                {"priority", a.isEmergency ? a.priority : -1},
-                {"doctor_id", doc ? doc->id : -1},
-                {"doctor_name", doc ? doc->name : "Not Assigned"},
-                {"specialization", specialization},
-                {"timestamp", time(nullptr)}
-            };
-
-            j.push_back(newApp);
-
-            ofstream out("data/appointments.json");
-            out << j.dump(4);
-            out.close();
-
-            appSys.bookAppointment(a);
-            cout << "Appointment booked and saved successfully." << endl;
-
-        } else if (choice == 3) {
-            Appointment a = appSys.getNextAppointment();
-            if (a.patientID == -1) {
-                cout << "No appointments in queue." << endl;
-                continue;
-            }
-            cout << "Next Patient: " << a.patientName << " (ID: " << a.patientID << ")" << endl;
-            string spec;
-            cout << "Enter required doctor specialization: ";
-            cin >> spec;
-            Doctor* doc = docAssign.assignDoctor(spec);
-            if (doc) {
-                cout << "Assigned Doctor: " << doc->name << " (ID: " << doc->id << ")" << endl;
-            } else {
-                cout << "No available doctor found." << endl;
-            }
-
-        } else if (choice == 4) {
-            break;
-        } else {
-            cout << "Invalid choice. Try again." << endl;
+    for (const auto& p : j) {
+        if (p.contains("id") && p.contains("name") && p.contains("symptoms")) {
+            Patient patient;
+            patient.id = p["id"];
+            patient.name = p["name"];
+            patient.symptoms = p["symptoms"];
+            patients.push_back(patient);
         }
     }
 
+    return patients;
+}
+
+int main(int argc, char* argv[]) {
+    if (argc < 4) {
+        cout << R"({"success": false, "message": "Missing arguments. Usage: ./appointmentSystem <patientID> <isEmergency> <priority>"})" << endl;
+        return 1;
+    }
+
+    // Parse command line arguments safely
+    int patientID = stoi(argv[1]);
+    bool isEmergency = stoi(argv[2]) != 0;
+    int priority = stoi(argv[3]);
+
+    // Load patients from JSON
+    vector<Patient> patients = loadPatients("data/patients.json");
+    if (patients.empty()) {
+        cout << R"({"success": false, "message": "No patients data found"})" << endl;
+        return 1;
+    }
+
+    // Find the patient by ID
+    auto it = find_if(patients.begin(), patients.end(), [&](const Patient& p) {
+        return p.id == patientID;
+    });
+
+    if (it == patients.end()) {
+        cout << R"({"success": false, "message": "Patient not found"})" << endl;
+        return 1;
+    }
+
+    // Extract patient details
+    string name = it->name;
+    string symptoms = it->symptoms;
+
+    // Create AppointmentSystem object and process booking
+    AppointmentSystem system;
+    Appointment appointment = system.processBooking(patientID, name, symptoms, isEmergency, priority);
+
+    // Output JSON result
+    json result = {
+        {"success", true},
+        {"doctor", appointment.doctorName},
+        {"specialization", appointment.specialization},
+        {"is_emergency", appointment.isEmergency},
+        {"timestamp", getReadableTime(appointment.timestamp)},  // ✅ Output readable time here
+        {"patient", {
+            {"id", appointment.patientID},
+            {"name", appointment.patientName},
+            {"symptoms", symptoms}
+        }}
+    };
+
+    cout << result.dump() << endl;
     return 0;
 }
