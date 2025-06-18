@@ -5,7 +5,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const lookupForm = document.getElementById('lookupForm');
     const lookupResult = document.getElementById('lookupResult');
 
-    // Format current timestamp
     function getFormattedDateTime() {
         const now = new Date();
         return now.toLocaleString('en-IN', {
@@ -15,26 +14,20 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Toggle New Patient Form
     newPatientBtn.addEventListener('click', () => {
         registerForm.style.display = 'block';
         lookupForm.style.display = 'none';
-        lookupResult.innerHTML = '';
         lookupResult.style.display = 'none';
     });
 
-    // Toggle Returning Patient Form
     returningPatientBtn.addEventListener('click', () => {
         registerForm.style.display = 'none';
         lookupForm.style.display = 'block';
-        lookupResult.innerHTML = '';
         lookupResult.style.display = 'none';
     });
 
-    // Handle New Patient Registration
     registerForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-
         const form = e.target;
         const currentDateTime = getFormattedDateTime();
 
@@ -72,7 +65,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Handle Returning Patient Lookup
     lookupForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const id = document.getElementById('lookupId').value.trim();
@@ -96,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const p = result.patient;
 
                 lookupResult.innerHTML = `
-                    <h3>Welcome back, <span id="patientName">${p.name}</span>!</h3>
+                    <p><strong>Name:</strong> ${p.name}</p>
                     <p><strong>Age:</strong> ${p.age}</p>
                     <p><strong>Sex:</strong> ${p.sex}</p>
                     <p><strong>Mobile:</strong> ${p.mobile}</p>
@@ -136,18 +128,25 @@ document.addEventListener('DOMContentLoaded', () => {
                         const patchResult = await patchRes.json();
                         if (!patchResult.success) {
                             alert("Failed to update symptoms.");
+                            return;
                         }
                     } catch (err) {
                         console.error("Failed to update symptoms", err);
+                        alert("Error updating symptoms.");
+                        return;
                     }
 
                     sessionStorage.setItem('patientId', p.id);
                     sessionStorage.setItem('symptoms', newSymptoms);
                     window.location.href = 'appointment.html';
                 });
+
             } else {
-                lookupResult.innerHTML = `<p style="color:red;">Patient not found. Please register as a new patient.</p>`;
-                lookupResult.style.display = 'block';
+                alert("Patient not found. Redirecting you to registration.");
+                lookupForm.reset();
+                lookupForm.style.display = 'none';
+                lookupResult.style.display = 'none';
+                registerForm.style.display = 'block';
             }
         } catch (err) {
             console.error(err);

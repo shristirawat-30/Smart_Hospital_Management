@@ -1,0 +1,68 @@
+<!-- public/appointment.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Book Appointment | Smart Hospital</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/appointment.css" />
+</head>
+<body>
+  <header class="main-header">
+    <div class="header-content">
+      <h1>Smart Hospital Management</h1>
+      <p class="slogan">One Step Closer to Care</p>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="registration.html">Register</a></li>
+          <li><a href="appointment.html" class="active">Appointment</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="form-section">
+    <h2>Book Appointment</h2>
+    <form id="appointmentForm">
+      <label>Patient ID:
+        <input type="number" name="patientID" required />
+      </label>
+
+      <label>Is it an Emergency?
+        <select name="isEmergency" required>
+          <option value="0">No</option>
+          <option value="1">Yes</option>
+        </select>
+      </label>
+
+      <label>Priority (only if emergency):
+        <input type="number" name="priority" placeholder="e.g., 1 (urgent)" />
+      </label>
+
+      <button type="submit">Submit</button>
+    </form>
+
+    <div id="responseBox"></div>
+  </main>
+
+  <script>
+    document.getElementById("appointmentForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const patientID = this.patientID.value;
+      const isEmergency = this.isEmergency.value;
+      const priority = this.priority.value || -1;
+
+      const response = await fetch('/run-cpp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: "appointment", patientID, isEmergency, priority })
+      });
+
+      const data = await response.json();
+      document.getElementById("responseBox").innerText = data.output || "Done.";
+    });
+  </script>
+</body>
+</html>

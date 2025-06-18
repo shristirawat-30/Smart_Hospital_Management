@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <fstream>
+#include <algorithm>
 #include <json.hpp>
 #include "Patient.h"
 
@@ -29,9 +30,13 @@ private:
                 p.symptoms = el["symptoms"];
                 p.mobile = el["mobile"];
                 p.address = el["address"];
-                p.date = el.value("date", "");  // fallback for older data
+                p.date = el.value("date", "");  // fallback
                 patientList.push_back(p);
             }
+            // Sort the list by ID for binary search
+            sort(patientList.begin(), patientList.end(), [](const Patient& a, const Patient& b) {
+                return a.id < b.id;
+            });
         }
     }
 
@@ -81,23 +86,34 @@ public:
     }
 
     int registerPatient(Patient p) {
-        p.id = patientList.size() + 1;
+        p.id = patientList.empty() ? 1 : patientList.back().id + 1;
         patientList.push_back(p);
-        savePatients();                  // Save to editable patient record
-        appendToPermanentStorage(p);     // Save to permanent log
+        sort(patientList.begin(), patientList.end(), [](const Patient& a, const Patient& b) {
+            return a.id < b.id;
+        });
+        savePatients();
+        appendToPermanentStorage(p);
         return p.id;
     }
 
     Patient* findPatientByID(int id) {
-        for (auto& p : patientList) {
-            if (p.id == id) return &p;
+        int low = 0, high = patientList.size() - 1;
+        while (low <= high) {
+            int mid = low + (high - low) / 2;
+            if (patientList[mid].id == id)
+                return &patientList[mid];
+            else if (patientList[mid].id < id)
+                low = mid + 1;
+            else
+                high = mid - 1;
         }
         return nullptr;
     }
 
     Patient* findPatientByMobile(const string& mobile) {
         for (auto& p : patientList) {
-            if (p.mobile == mobile) return &p;
+            if (p.mobile == mobile)
+                return &p;
         }
         return nullptr;
     }

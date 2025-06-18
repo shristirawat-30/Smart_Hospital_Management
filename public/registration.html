@@ -27,18 +27,24 @@
     </div>
   </header>
 
-  <!-- Registration Form Section -->
+  <!-- Main Section -->
   <main class="form-section">
-    <h2>Register New Patient</h2>
-    <form id="registerForm">
+    <h2>Patient Registration</h2>
+
+    <!-- Toggle Buttons -->
+    <div class="toggle-buttons">
+      <button id="newPatientBtn">New Patient</button>
+      <button id="returningPatientBtn">Returning Patient</button>
+    </div>
+
+    <!-- New Patient Form -->
+    <form id="registerForm" class="form-block" style="display: none;">
       <label>Name:
         <input type="text" name="name" required>
       </label>
-
       <label>Age:
         <input type="number" name="age" required>
       </label>
-
       <label>Sex:
         <select name="sex" required>
           <option value="">--Select--</option>
@@ -47,24 +53,46 @@
           <option value="Other">Other</option>
         </select>
       </label>
-
       <label>Symptoms:
         <input type="text" name="symptoms" required>
       </label>
-
       <label>Mobile Number:
         <input type="tel" name="mobile" required>
       </label>
-
       <label>Address:
         <textarea name="address" rows="3" required></textarea>
       </label>
-
       <button type="submit">Register</button>
     </form>
+
+    <!-- Returning Patient Form -->
+    <form id="lookupForm" class="form-block" style="display: none;">
+      <label>Patient ID:
+        <input type="number" id="lookupId" placeholder="Enter your ID">
+      </label>
+      <p style="text-align: center; font-weight: bold;">OR</p>
+      <label>Mobile Number:
+        <input type="tel" id="lookupMobile" placeholder="Enter your mobile number">
+      </label>
+      <button type="submit">Find My Record</button>
+    </form>
+
+    <!-- Returning Patient Info Display -->
+    <div id="lookupResult" class="form-block" style="display: none;">
+      <p><strong>Name:</strong> <span id="patientName"></span></p>
+      <p><strong>Age:</strong> <span id="patientAge"></span></p>
+      <p><strong>Sex:</strong> <span id="patientSex"></span></p>
+      <p><strong>Mobile:</strong> <span id="patientMobile"></span></p>
+      <p><strong>Address:</strong> <span id="patientAddress"></span></p>
+
+      <label>Current Symptoms:
+        <input type="text" id="symptomsUpdate" required>
+      </label>
+
+      <button id="proceedToAppointment">Proceed to Appointment</button>
+    </div>
   </main>
 
-  <!--  Linked external JS instead of inline script -->
   <script src="js/registration.js"></script>
 </body>
 </html>
