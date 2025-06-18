@@ -12,9 +12,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Ensure required directories exist
 const dataDir = path.join(__dirname, 'data');
-const permanentFile = path.join(dataDir, 'permanent_storage.json');
+const buildDir = path.join(__dirname, 'build');
+if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir);
+if (!fs.existsSync(buildDir)) fs.mkdirSync(buildDir);
+
 const patientFile = path.join(dataDir, 'patients.json');
+const permanentFile = path.join(dataDir, 'permanent_storage.json');
 
 // Utility: Read JSON
 function readJSON(fileName) {
@@ -30,11 +35,9 @@ function readJSON(fileName) {
 function writeToFile(fileName, entry) {
     const filePath = path.join(dataDir, fileName);
     let data = [];
-
     if (fs.existsSync(filePath)) {
         data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
     }
-
     data.push(entry);
     fs.writeFileSync(filePath, JSON.stringify(data, null, 4));
 }
@@ -68,7 +71,7 @@ app.get('/api/appointments', (req, res) => {
     res.json(appointments);
 });
 
-// Analytics
+// Analytics endpoint
 app.get('/api/analytics/:type', (req, res) => {
     const map = {
         patient: 'patients.json',
@@ -85,8 +88,12 @@ app.get('/api/analytics/:type', (req, res) => {
 // Register new patient
 app.post('/api/register', (req, res) => {
     const patient = req.body;
-    let patients = readJSON('patients.json');
 
+    if (!patient.name || !patient.symptoms || !patient.mobile) {
+        return res.status(400).json({ message: "Missing required patient fields." });
+    }
+
+    let patients = readJSON('patients.json');
     const newId = patients.length > 0 ? patients[patients.length - 1].id + 1 : 1;
     patient.id = newId;
 
@@ -94,7 +101,6 @@ app.post('/api/register', (req, res) => {
     fs.writeFileSync(patientFile, JSON.stringify(patients, null, 4));
 
     appendToPermanentStorage(patient);
-
     res.status(201).json({ message: "Patient registered", id: newId });
 });
 
@@ -106,7 +112,7 @@ app.get('/api/patient/:id', (req, res) => {
     res.json(patient ? { found: true, patient } : { found: false });
 });
 
-// Lookup by Mobile
+// Lookup patient by mobile
 app.get('/api/patient-mobile/:mobile', (req, res) => {
     const mobile = req.params.mobile;
     const patients = readJSON('permanent_storage.json');
@@ -114,75 +120,63 @@ app.get('/api/patient-mobile/:mobile', (req, res) => {
     res.json(patient ? { found: true, patient } : { found: false });
 });
 
-// Book appointment
+// C++ Executable Path
+const cppAppointmentSystem = path.join(__dirname, 'build', process.platform === 'win32' ? 'hospital_app.exe' : './hospital_app');
+
+// Book appointment (via C++)
 app.post('/api/book-appointment', (req, res) => {
     const { id, isEmergency, priority } = req.body;
-    const patients = readJSON('patients.json');
-    const patient = patients.find(p => p.id == id);
-    if (!patient) return res.json({ success: false, message: 'Patient not found' });
+    if (!id || typeof isEmergency === 'undefined') {
+        return res.status(400).json({ success: false, message: "Missing required fields: id or isEmergency" });
+    }
 
-    const doctors = readJSON('doctors.json');
+    const safePriority = isEmergency ? (priority || 1) : 999;
+    const command = `"${cppAppointmentSystem}" ${id} ${isEmergency} ${safePriority}`;
 
-    const matchSpec = symptom => {
-        const lower = symptom.toLowerCase();
-        if (lower.includes("chest")) return "Cardiology";
-        if (lower.includes("bone")) return "Orthopedics";
-        if (lower.includes("skin")) return "Dermatology";
-        return "General";
-    };
+    exec(command, { timeout: 5000 }, (err, stdout, stderr) => {
+        if (err) {
+            console.error(" C++ Execution Error:", stderr);
+            return res.status(500).json({ success: false, message: "C++ execution failed." });
+        }
 
-    const specialization = matchSpec(patient.symptoms);
-    const doctor = doctors.find(d => d.specialization === specialization) || doctors.find(d => d.specialization === "General");
-
-    const newAppointment = {
-        patient_id: patient.id,
-        patient_name: patient.name,
-        is_emergency: !!parseInt(isEmergency),
-        priority: parseInt(priority),
-        doctor_id: doctor ? doctor.id : -1,
-        doctor: doctor ? doctor.name : "Not Assigned",
-        specialization,
-        timestamp: Date.now()
-    };
-
-    const appointmentsFile = path.join(dataDir, 'appointments.json');
-    const appointments = readJSON('appointments.json');
-    appointments.push(newAppointment);
-    fs.writeFileSync(appointmentsFile, JSON.stringify(appointments, null, 2));
-
-    res.json({ success: true, doctor: doctor.name });
+        try {
+            const result = JSON.parse(stdout);
+            console.log(" Appointment processed via C++:", result);
+            res.json(result);
+        } catch (e) {
+            console.error(" Invalid JSON from C++:", stdout);
+            res.status(500).json({ success: false, message: "Invalid C++ output format." });
+        }
+    });
 });
 
-// Update symptoms (Returning patient - new entry, not overwrite)
+// Update symptoms for returning patient
 app.patch('/api/update-symptoms/:id', (req, res) => {
     const id = parseInt(req.params.id);
     const { symptoms, date } = req.body;
 
     const permanentData = readJSON('permanent_storage.json');
     const patient = permanentData.find(p => p.id === id);
-
     if (!patient) return res.status(404).json({ error: "Patient not found in permanent storage." });
 
-    const newEntry = {
-        ...patient,
-        symptoms,
-        date
-    };
-
+    const newEntry = { ...patient, symptoms, date };
     writeToFile('patients.json', newEntry);
     appendToPermanentStorage(newEntry);
 
     res.json({ success: true, message: "Symptoms updated and entry stored." });
 });
 
-// Optional: C++ lookup
-app.post('/api/lookup-patient', (req, res) => {
-    const { idOrMobile } = req.body;
-    const cppExecutable = path.join(__dirname, 'build', 'lookup');
 
-    exec(`${cppExecutable} ${idOrMobile}`, (err, stdout, stderr) => {
+// New C++-based appointment lookup (only searches today's patients.json)
+app.post('/api/appointment-cpp-lookup', (req, res) => {
+    const { id } = req.body;
+    if (!id) return res.status(400).json({ error: "Missing patient ID" });
+
+    const cppExecutable = path.join(__dirname, 'build', process.platform === 'win32' ? 'appointment_lookup.exe' : './appointment_lookup');
+
+    exec(`"${cppExecutable}" ${id}`, { timeout: 5000 }, (err, stdout, stderr) => {
         if (err) {
-            console.error("C++ Lookup Error:", stderr);
+            console.error("Appointment C++ Lookup Error:", stderr);
             return res.status(500).json({ error: "Lookup failed." });
         }
 
@@ -195,6 +189,9 @@ app.post('/api/lookup-patient', (req, res) => {
     });
 });
 
+
+
+// Server start
 app.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
+    console.log(` Server running at http://localhost:${PORT}`);
 });
