@@ -141,14 +141,28 @@ app.post('/api/book-appointment', (req, res) => {
 
         try {
             const result = JSON.parse(stdout);
-            console.log(" Appointment processed via C++:", result);
-            res.json(result);
+
+            //  Ensure timestamp is included and passed to frontend
+            const response = {
+                success: result.success || false,
+                doctor: result.doctor || "Not Assigned",
+                specialization: result.specialization || "General",
+                is_emergency: result.is_emergency || false,
+                timestamp: result.timestamp || null,
+                patient: result.patient || null,
+                message: result.message || ""
+            };
+
+            console.log(" Appointment processed via C++:", response);
+            res.json(response);
+
         } catch (e) {
             console.error(" Invalid JSON from C++:", stdout);
             res.status(500).json({ success: false, message: "Invalid C++ output format." });
         }
     });
 });
+
 
 // Update symptoms for returning patient
 app.patch('/api/update-symptoms/:id', (req, res) => {
