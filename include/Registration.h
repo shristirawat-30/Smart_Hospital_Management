@@ -4,7 +4,7 @@
 #include <vector>
 #include <fstream>
 #include <algorithm>
-#include <json.hpp>
+#include "../lib/json.hpp"
 #include "Patient.h"
 
 using json = nlohmann::json;

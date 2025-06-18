@@ -4,12 +4,13 @@
 #include <string>
 
 struct Doctor {
-    std::string name, specialization;
     int id;
-    int currentPatients;
+    std::string name;
+    std::string specialization;
     bool available;
+    int currentPatients;
 
-    // For priority queue (min-heap)
+    // For min-heap priority queue (least loaded doctor first)
     bool operator>(const Doctor& other) const {
         return currentPatients > other.currentPatients;
     }

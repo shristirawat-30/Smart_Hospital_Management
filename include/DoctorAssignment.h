@@ -4,25 +4,52 @@
 #include <vector>
 #include <queue>
 #include <fstream>
-//#include <json.hpp>
-#include "json.hpp"
-
+#include <unordered_map>
+#include "../lib/json.hpp"
 #include "Doctor.h"
 
 using json = nlohmann::json;
 using namespace std;
 
+// Comparator for min-heap based on currentPatients
+struct DoctorComparator {
+    bool operator()(const Doctor* a, const Doctor* b) const {
+        return a->currentPatients > b->currentPatients;
+    }
+};
+
 class DoctorAssignment {
 private:
     vector<Doctor> allDoctors;
-    string doctorFile = "data/doctors.json";
+    string permanentDoctorFile = "data/doctors.json";
+    string dailyDoctorFile = "data/doctors_daily.json";
 
-    unordered_map<string, priority_queue<Doctor, vector<Doctor>, greater<>>> specialtyMap;
+    unordered_map<string, priority_queue<Doctor*, vector<Doctor*>, DoctorComparator>> specialtyMap;
+
+    // Generate doctors_daily.json from permanent one if not exists
+    void initializeDailyFromPermanent() {
+        ifstream base(permanentDoctorFile);
+        ofstream daily(dailyDoctorFile);
+        if (base && daily) {
+            json data;
+            base >> data;
+            for (auto& d : data) {
+                d["currentPatients"] = 0;
+                d["available"] = true;
+            }
+            daily << data.dump(4);
+        }
+    }
 
     void loadDoctors() {
-        ifstream inFile(doctorFile);
+        ifstream inFile(dailyDoctorFile);
+        if (!inFile) {
+            initializeDailyFromPermanent();
+            inFile.open(dailyDoctorFile);
+        }
+
+        json j;
         if (inFile) {
-            json j;
             inFile >> j;
             for (auto& el : j) {
                 Doctor d;
@@ -32,17 +59,19 @@ private:
                 d.currentPatients = el["currentPatients"];
                 d.available = el["available"];
                 allDoctors.push_back(d);
+            }
 
-                // Add to specialization-based min-heap if available
+            // Load pointers into the queue from allDoctors vector
+            for (auto& d : allDoctors) {
                 if (d.available)
-                    specialtyMap[d.specialization].push(d);
+                    specialtyMap[d.specialization].push(&d);
             }
         }
     }
 
     void saveDoctors() {
         json j = json::array();
-        for (auto& d : allDoctors) {
+        for (const auto& d : allDoctors) {
             j.push_back({
                 {"id", d.id},
                 {"name", d.name},
@@ -51,40 +80,42 @@ private:
                 {"available", d.available}
             });
         }
-        ofstream outFile(doctorFile);
+
+        ofstream outFile(dailyDoctorFile);
         outFile << j.dump(4);
     }
 
 public:
-    DoctorAssignment() { loadDoctors(); }
+    DoctorAssignment(const string& customDailyFile = "data/doctors_daily.json") {
+        dailyDoctorFile = customDailyFile;
+        loadDoctors();
+    }
 
     Doctor* assignDoctor(const string& specialization) {
-        auto& pq = specialtyMap[specialization];
-
-        if (pq.empty()) {
+        if (specialtyMap[specialization].empty()) {
+            if (!specialtyMap["General"].empty()) {
+                return assignDoctor("General");
+            }
             return nullptr;
         }
 
-        Doctor top = pq.top();
-        pq.pop();
+        Doctor* top = specialtyMap[specialization].top();
+        specialtyMap[specialization].pop();
 
-        // Update in allDoctors
-        for (auto& d : allDoctors) {
-            if (d.id == top.id) {
-                d.currentPatients++;
-                if (d.currentPatients > 10) {
-                    d.available = false;
-                } else {
-                    specialtyMap[specialization].push(d); // reinsert with updated load
-                }
-                saveDoctors();
-                return &d;
-            }
+        top->currentPatients++;
+        if (top->currentPatients >= 10) {
+            top->available = false;
+        } else {
+            specialtyMap[specialization].push(top);
         }
 
-        return nullptr;
+        saveDoctors();
+        return top;
+    }
+
+    const vector<Doctor>& getAllDoctors() const {
+        return allDoctors;
     }
 };
 
 #endif
-

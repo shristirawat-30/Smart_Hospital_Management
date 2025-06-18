@@ -3,11 +3,20 @@
 
 #include <queue>
 #include <vector>
+#include <string>
+#include <unordered_map>
+#include <algorithm>
+#include <fstream>
+#include <ctime>
+
 #include "Appointment.h"
+#include "Doctor.h"
+#include "SymptomMatcher.h"
+#include "../lib/json.hpp"
 
-using namespace std;
+using json = nlohmann::json;
 
-// Custom comparator for min-heap (lower priority value = higher priority)
+// Comparator for emergency queue: lower priority = higher urgency
 struct AppointmentComparator {
     bool operator()(const Appointment& a, const Appointment& b) const {
         return a.priority > b.priority;
@@ -16,30 +25,32 @@ struct AppointmentComparator {
 
 class AppointmentSystem {
 private:
-    queue<Appointment> normalQueue;
-    priority_queue<Appointment, vector<Appointment>, AppointmentComparator> emergencyQueue;
+    std::queue<Appointment> normalQueue; // FCFS queue for normal patients
+    std::priority_queue<Appointment, std::vector<Appointment>, AppointmentComparator> emergencyQueue; // Min-heap for emergencies
+    std::vector<Doctor> doctors;
+
+    const std::string doctorDailyFile = "data/doctors_daily.json";
+    const std::string appointmentFile = "data/appointments.json";
+
+    void loadDoctors();
+    void updateDoctorDailyFile();
+    void saveAppointment(const Appointment& a); // Save appointment and update files
 
 public:
-    void bookAppointment(const Appointment& a) {
-        if (a.isEmergency) {
-            emergencyQueue.push(a);
-        } else {
-            normalQueue.push(a);
-        }
-    }
+    AppointmentSystem(); // Constructor
 
-    Appointment getNextAppointment() {
-        if (!emergencyQueue.empty()) {
-            Appointment a = emergencyQueue.top();
-            emergencyQueue.pop();
-            return a;
-        } else if (!normalQueue.empty()) {
-            Appointment a = normalQueue.front();
-            normalQueue.pop();
-            return a;
-        }
-        return Appointment{-1, "", false, -1};
-    }
+    std::string getSpecializationFromSymptom(const std::string& symptoms) const;
+
+    Doctor assignDoctor(const std::string& specialization);
+
+    Appointment processBooking(int patientID, const std::string& name, const std::string& symptoms, bool isEmergency, int priority);
+
+    Appointment getNextAppointment();
+
+    void clearAll();
 };
 
-#endif
+
+std::string getReadableTime(long timestamp);
+
+#endif // APPOINTMENT_SYSTEM_H

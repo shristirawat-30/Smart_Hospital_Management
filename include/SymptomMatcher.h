@@ -5,13 +5,13 @@
 #include <string>
 #include <vector>
 #include <algorithm>
-#include <sstream>
 #include <climits>
 
 class SymptomMatcher {
 private:
     std::unordered_map<std::string, std::string> knownSymptoms;
- // Known as edit distance problem-->
+
+    // Levenshtein Distance calculation (Dynamic Programming)
     int levenshteinDistance(const std::string& a, const std::string& b) const {
         int m = a.size(), n = b.size();
         std::vector<std::vector<int>> dp(m + 1, std::vector<int>(n + 1));
@@ -24,12 +24,14 @@ private:
                 if (a[i - 1] == b[j - 1])
                     dp[i][j] = dp[i - 1][j - 1];
                 else
-                    dp[i][j] = 1 + std::min({dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]});
+                    dp[i][j] = 1 + std::min({ dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1] });
             }
         }
+
         return dp[m][n];
     }
 
+    // Convert string to lowercase for case-insensitive matching
     static std::string toLower(const std::string& str) {
         std::string lower = str;
         std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
@@ -52,19 +54,21 @@ public:
             {"fever", "General"},
             {"headache", "Neurology"},
             {"nausea", "Neurology"},
-            {"fatigue", "General"}
+            {"fatigue", "General"},
+            {"vomit", "General"}
         };
     }
 
-    std::string matchSpecialization(const std::string& symptoms) {
+    std::string matchSpecialization(const std::string& inputSymptom) {
         std::string bestMatch = "General";
         int minDistance = INT_MAX;
+        std::string cleanedInput = toLower(inputSymptom);
 
-        for (const auto& entry : knownSymptoms) {
-            int dist = levenshteinDistance(toLower(symptoms), toLower(entry.first));
+        for (const auto& [known, specialization] : knownSymptoms) {
+            int dist = levenshteinDistance(cleanedInput, toLower(known));
             if (dist < minDistance && dist <= 5) {
                 minDistance = dist;
-                bestMatch = entry.second;
+                bestMatch = specialization;
             }
         }
 
@@ -72,4 +76,4 @@ public:
     }
 };
 
-#endif
+#endif // SYMPTOM_MATCHER_H
