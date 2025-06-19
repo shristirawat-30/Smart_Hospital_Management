@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -36,27 +35,27 @@
                             <option value="appointment-analytics.html" selected>Appointment Analytics</option>
                         </select>
                     </div>
-                    <button class="export-btn">📥 Export Analytics Data (JSON)</button>
+                    <button class="export-btn" onclick="exportAnalytics()">📥 Export Analytics Data (JSON)</button>
                 </div>
             </div>
 
             <!-- Appointment Trend Analysis -->
             <div class="stats-card">
                 <div class="card-header">
-                    <h2>📅 Appointment Trend Analysis</h2>
+                    <h2>🗕️ Appointment Trend Analysis</h2>
                 </div>
                 <div class="stats-grid">
                     <div class="stat-item blue">
                         <p class="stat-label">Total Appointments</p>
-                        <p class="stat-value">1</p>
+                        <p class="stat-value" id="totalAppointments">0</p>
                     </div>
                     <div class="stat-item red">
                         <p class="stat-label">Emergency Appointments</p>
-                        <p class="stat-value">0</p>
+                        <p class="stat-value" id="emergencyAppointments">0</p>
                     </div>
                     <div class="stat-item green">
                         <p class="stat-label">Regular Appointments</p>
-                        <p class="stat-value">1</p>
+                        <p class="stat-value" id="regularAppointments">0</p>
                     </div>
                 </div>
             </div>
@@ -86,58 +85,18 @@
                             <div class="legend-item">
                                 <div class="legend-color regular"></div>
                                 <span>Regular</span>
-                                <span class="legend-value">100%</span>
+                                <span class="legend-value" id="regularPercent">0%</span>
                             </div>
                             <div class="legend-item">
                                 <div class="legend-color emergency"></div>
                                 <span>Emergency</span>
-                                <span class="legend-value">0%</span>
+                                <span class="legend-value" id="emergencyPercent">0%</span>
                             </div>
                             <div class="legend-item">
                                 <div class="legend-color followup"></div>
                                 <span>Follow-up</span>
-                                <span class="legend-value">0%</span>
+                                <span class="legend-value" id="followupPercent">0%</span>
                             </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Schedule Insights -->
-            <div class="insights-grid">
-                <div class="insight-card">
-                    <div class="card-header">
-                        <h3>⏰ Peak Hours</h3>
-                    </div>
-                    <div class="peak-hours-list">
-                        <div class="peak-item blue">
-                            <p class="peak-title">Most Busy: Tuesday</p>
-                            <p class="peak-subtitle">1 appointment scheduled</p>
-                        </div>
-                        <div class="peak-item green">
-                            <p class="peak-title">Available slots: 98%</p>
-                            <p class="peak-subtitle">Plenty of capacity for new appointments</p>
-                        </div>
-                        <div class="peak-item orange">
-                            <p class="peak-title">Weekly growth: +100%</p>
-                            <p class="peak-subtitle">From 0 to 1 appointments this week</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="insight-card">
-                    <div class="card-header">
-                        <h3>⚠️ Schedule Alerts</h3>
-                    </div>
-                    <div class="alerts-list">
-                        <div class="alert-item green">
-                            <p>✓ No scheduling conflicts detected</p>
-                        </div>
-                        <div class="alert-item blue">
-                            <p>ⓘ 6 days with no appointments scheduled</p>
-                        </div>
-                        <div class="alert-item yellow">
-                            <p>⚠ Consider promoting available appointment slots</p>
                         </div>
                     </div>
                 </div>
@@ -148,94 +107,110 @@
                 <div class="card-header">
                     <h3>Recent Appointment Activity</h3>
                 </div>
-                <div class="history-list">
-                    <div class="history-item active">
-                        <div class="history-dot active"></div>
-                        <div class="history-content">
-                            <p class="history-title">Regular Appointment Scheduled</p>
-                            <p class="history-subtitle">Tuesday - Patient consultation</p>
-                        </div>
-                        <span class="history-status active">Active</span>
-                    </div>
-                    
-                    <div class="history-item">
-                        <div class="history-dot"></div>
-                        <div class="history-content">
-                            <p class="history-title">No other appointments this week</p>
-                            <p class="history-subtitle">Schedule is mostly available</p>
-                        </div>
-                        <span class="history-status">Available</span>
-                    </div>
+                <div class="history-list" id="recentAppointments">
+                    <p style="padding: 1rem; color: #6b7280;">Loading recent activity...</p>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Appointment Trend Chart
-        const trendCtx = document.getElementById('appointmentTrendChart').getContext('2d');
-        new Chart(trendCtx, {
-            type: 'line',
-            data: {
-                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                datasets: [{
-                    label: 'Number of Appointments',
-                    data: [0, 1, 0, 0, 0, 0, 0],
-                    borderColor: '#10B981',
-                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                    borderWidth: 3,
-                    pointBackgroundColor: '#10B981',
-                    pointBorderColor: '#10B981',
-                    pointRadius: 6,
-                    pointHoverRadius: 8,
-                    tension: 0.4,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            color: '#e5e7eb'
-                        }
-                    },
-                    x: {
-                        grid: {
-                            color: '#e5e7eb'
-                        }
-                    }
-                }
-            }
-        });
+        const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-        // Appointment Type Chart
-        const typeCtx = document.getElementById('appointmentTypeChart').getContext('2d');
-        new Chart(typeCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Regular', 'Emergency', 'Follow-up'],
-                datasets: [{
-                    data: [100, 0, 0],
-                    backgroundColor: ['#3B82F6', '#EF4444', '#10B981'],
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
+        fetch('/api/appointment-analytics')
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('totalAppointments').textContent = data.total;
+                document.getElementById('emergencyAppointments').textContent = data.emergency;
+                document.getElementById('regularAppointments').textContent = data.regular;
+
+                const total = data.total || 1;
+                document.getElementById('regularPercent').textContent = ((data.regular / total) * 100).toFixed(0) + '%';
+                document.getElementById('emergencyPercent').textContent = ((data.emergency / total) * 100).toFixed(0) + '%';
+                document.getElementById('followupPercent').textContent = ((data.followup / total) * 100).toFixed(0) + '%';
+
+                // Charts
+                const trendCtx = document.getElementById('appointmentTrendChart').getContext('2d');
+                new Chart(trendCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+                        datasets: [{
+                            label: 'Number of Appointments',
+                            data: data.countsByDay,
+                            borderColor: '#10B981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            borderWidth: 3,
+                            pointBackgroundColor: '#10B981',
+                            pointRadius: 6,
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { beginAtZero: true, grid: { color: '#e5e7eb' } },
+                            x: { grid: { color: '#e5e7eb' } }
+                        }
                     }
-                }
+                });
+
+                const typeCtx = document.getElementById('appointmentTypeChart').getContext('2d');
+                new Chart(typeCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Regular', 'Emergency', 'Follow-up'],
+                        datasets: [{
+                            data: [data.regular, data.emergency, data.followup],
+                            backgroundColor: ['#3B82F6', '#EF4444', '#10B981'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } }
+                    }
+                });
+
+                const recentContainer = document.getElementById('recentAppointments');
+                recentContainer.innerHTML = '';
+                data.recent.forEach(item => {
+                    recentContainer.innerHTML += `
+                        <div class="history-item active">
+                            <div class="history-dot ${item.type === 'Emergency' ? 'red' : 'active'}"></div>
+                            <div class="history-content">
+                                <p class="history-title">${item.type} Appointment</p>
+                                <p class="history-subtitle">${item.day} - ${item.patient}</p>
+                            </div>
+                            <span class="history-status active">${item.type}</span>
+                        </div>
+                    `;
+                });
+            });
+
+        // Export button
+        function exportAnalytics() {
+            fetch('/api/appointment-analytics')
+                .then(res => res.blob())
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'appointment_analytics.json';
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                });
+        }
+
+        // View change handler
+        document.getElementById('view-select').addEventListener('change', function () {
+            const selected = this.value;
+            if (selected !== 'appointment-analytics.html') {
+                window.location.href = selected;
             }
         });
     </script>

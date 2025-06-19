@@ -292,6 +292,60 @@ app.get('/api/doctor-analytics-today', (req, res) => {
     });
 });
 
+// appointment-analytics
+app.get('/api/appointment-analytics', (req, res) => {
+    const appointments = readJSON('appointments.json');
+
+    const countsByDay = [0, 0, 0, 0, 0, 0, 0]; // Sunday to Saturday
+    let emergency = 0, regular = 0, followup = 0;
+    const recent = [];
+
+    const seenPatients = new Set();
+
+    appointments.forEach(appt => {
+        // Parse timestamp
+        let date = new Date();
+        if (typeof appt.timestamp === 'number') {
+            date = new Date(appt.timestamp * 1000);
+        } else if (typeof appt.timestamp === 'string') {
+            date = new Date(appt.timestamp);
+        }
+
+        // Get day index
+        const day = date.getDay();
+        countsByDay[day]++;
+
+        // Count types
+        if (appt.isEmergency) emergency++;
+        else regular++;
+
+        // Detect follow-ups (same patient appearing again)
+        const pid = appt.patient?.id || appt.patientId;
+        if (pid && seenPatients.has(pid)) {
+            followup++;
+        }
+        if (pid) seenPatients.add(pid);
+
+        // Add to recent activity
+        recent.push({
+            type: appt.isEmergency ? 'Emergency' : 'Regular',
+            day: date.toLocaleDateString('en-IN', { weekday: 'long' }),
+            patient: appt.patient?.name || appt.patientName || 'Unknown'
+        });
+    });
+
+    res.json({
+        total: appointments.length,
+        emergency,
+        regular,
+        followup,
+        countsByDay,
+        recent: recent.slice(-5).reverse()
+    });
+});
+
+
+
 
 
 // Server start
