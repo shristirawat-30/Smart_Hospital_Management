@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Doctor Categories Overview</title>
+  <link rel="stylesheet" href="css/doctor_categories_analytics.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="main-header hospital-header">
+    <div class="header-content container">
+      <div class="hospital-brand">
+        <span class="hospital-logo">🏥</span>
+        <div class="hospital-title">
+          <h1>Smart Hospital Management</h1>
+          <p class="slogan">Doctor Specialization Analytics</p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="#">Billing</a></li>
+      <li><a href="help.html">Help Desk</a></li>
+    </ul>
+  </nav>
+
+  <!-- Main Dashboard -->
+  <main class="dashboard">
+    <div class="header">
+      <a href="analytics.html" class="back-btn">← Back</a>
+      <h1>📊 Doctor Categories Overview</h1>
+      <p class="subheading">Distribution of doctors across specializations</p>
+    </div>
+
+    <div class="chart-card">
+      <h3>Doctors by Specialization</h3>
+      <canvas id="specializationChart" height="150"></canvas>
+    </div>
+
+    <div class="chart-card" style="margin-top: 2rem;">
+      <h3>Doctor List</h3>
+      <table class="doctor-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Specialization</th>
+          </tr>
+        </thead>
+        <tbody id="doctor-table-body">
+          <!-- Dynamically filled -->
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- JavaScript -->
+  <script>
+    fetch('/api/doctors')
+      .then(response => response.json())
+      .then(data => {
+        const specializationCounts = {};
+        const tableBody = document.getElementById("doctor-table-body");
+
+        data.forEach(doctor => {
+          // Count specialization frequency
+          specializationCounts[doctor.specialization] = (specializationCounts[doctor.specialization] || 0) + 1;
+
+          // Populate table
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${doctor.id}</td>
+            <td>${doctor.name}</td>
+            <td>${doctor.specialization}</td>
+          `;
+          tableBody.appendChild(row);
+        });
+
+        // Render Chart
+        const ctx = document.getElementById("specializationChart").getContext("2d");
+        new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: Object.keys(specializationCounts),
+            datasets: [{
+              label: "Number of Doctors",
+              data: Object.values(specializationCounts),
+              backgroundColor: "#3b82f6"
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { display: false },
+              tooltip: { enabled: true }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: { stepSize: 1 }
+              }
+            }
+          }
+        });
+      })
+      .catch(err => {
+        console.error("Failed to load doctors", err);
+      });
+  </script>
+
+</body>
+</html>

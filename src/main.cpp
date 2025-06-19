@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
-#include <ctime>  // ✅ Needed for timestamp conversion
+#include <ctime>  //  Needed for timestamp conversion
 #include "json.hpp"
 
 #include "AppointmentSystem.h"
@@ -12,7 +12,7 @@
 using json = nlohmann::json;
 using namespace std;
 
-// ✅ Function to convert UNIX timestamp to readable time
+//  Function to convert UNIX timestamp to readable time
 string getReadableTime(time_t timestamp) {
     char buffer[100];
     strftime(buffer, sizeof(buffer), "%A, %B %d, %Y, %I:%M:%S %p", localtime(&timestamp));
@@ -86,7 +86,7 @@ int main(int argc, char* argv[]) {
         {"doctor", appointment.doctorName},
         {"specialization", appointment.specialization},
         {"is_emergency", appointment.isEmergency},
-        {"timestamp", getReadableTime(appointment.timestamp)},  // ✅ Output readable time here
+        {"timestamp", getReadableTime(appointment.timestamp)},  //  Output readable time here
         {"patient", {
             {"id", appointment.patientID},
             {"name", appointment.patientName},
