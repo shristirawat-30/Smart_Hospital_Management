@@ -346,6 +346,75 @@ app.get('/api/appointment-analytics', (req, res) => {
 
 
 
+// Reset doctor workload to 0
+app.post('/api/reset-workload', (req, res) => {
+    try {
+        const filePath = path.join(dataDir, 'doctors_daily.json');
+        const doctors = readJSON('doctors_daily.json').map(doc => ({
+            ...doc,
+            workload: 0,
+            currentPatients: 0
+        }));
+        fs.writeFileSync(filePath, JSON.stringify(doctors, null, 2));
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// Clear appointments
+app.post('/api/reset-appointments', (req, res) => {
+    try {
+        fs.writeFileSync(path.join(dataDir, 'appointments.json'), JSON.stringify([], null, 2));
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// Clear temporary patients
+app.post('/api/reset-patients', (req, res) => {
+    try {
+        fs.writeFileSync(path.join(dataDir, 'patients.json'), JSON.stringify([], null, 2));
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// Export as CSV
+app.get('/export/:type', (req, res) => {
+    const type = req.params.type;
+    let filePath = '';
+
+    if (type === 'patients') filePath = path.join(dataDir, 'patients.json');
+    else if (type === 'appointments') filePath = path.join(dataDir, 'appointments.json');
+    else if (type === 'workload') filePath = path.join(dataDir, 'doctors_daily.json');
+    else return res.status(400).send('Invalid type.');
+
+    fs.readFile(filePath, 'utf-8', (err, data) => {
+        if (err) return res.status(500).send('Error reading file.');
+
+        const json = JSON.parse(data);
+        if (!Array.isArray(json) || json.length === 0) {
+            return res.status(200).send('No data to export.');
+        }
+
+        const keys = Object.keys(json[0]);
+        const csvRows = [keys.join(','), ...json.map(obj => keys.map(k => obj[k]).join(','))];
+        const csv = csvRows.join('\n');
+
+        res.setHeader('Content-Disposition', `attachment; filename=${type}_${getDateString()}.csv`);
+        res.setHeader('Content-Type', 'text/csv');
+        res.status(200).send(csv);
+    });
+});
+
+// Helper for export date naming
+function getDateString() {
+    const now = new Date();
+    return now.toISOString().split('T')[0];
+}
 
 
 // Server start

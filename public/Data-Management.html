@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Management</title>
+   <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/Data-Mangement.css">
+</head>
+<body>
+  <header class="main-header">
+    <div class="header-content">
+      <span class="logo-icon">🗄️</span>
+      <div>
+        <h1>Data Management Panel</h1>
+        <p class="slogan">Securely manage & export your hospital data</p>
+        <div id="datetime" class="datetime"></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="action-buttons">
+      <h2>Export Data</h2>
+      <button onclick="exportCSV('patients')">Export Patients CSV</button>
+      <button onclick="exportCSV('appointments')">Export Appointments CSV</button>
+      <button onclick="exportCSV('workload')">Export Workload CSV</button>
+    </section>
+
+    <section class="action-buttons">
+      <h2>Reset Functions</h2>
+      <button onclick="resetWorkload()">Reset Doctor Workload</button>
+      <button onclick="clearAppointments()">Clear Appointments File</button>
+      <button onclick="clearTempPatients()">Clear Temporary Patients</button>
+    </section>
+  </main>
+
+  <script src="js/Data-Management.js"></script>
+</body>
+</html>
